@@ -1,0 +1,3 @@
+Run pip install alerta
+
+Configuration file Location: $HOME/.alerta.conf
