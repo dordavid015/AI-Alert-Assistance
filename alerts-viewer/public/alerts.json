@@ -1,0 +1,138 @@
+{
+  "alerts": [
+    {
+      "attributes": {
+        "endsAt": "0001-01-01T00:00:00Z",
+        "externalUrl": "http://LAPTOP-VB9I5SHF:9093",
+        "isOutOfHours": false,
+        "moreInfo": "<a href=\"http://LAPTOP-VB9I5SHF:9090/graph?g0.expr=vector%281%29&g0.tab=1\" target=\"_blank\">Prometheus Graph</a>",
+        "runBookUrl": "http://www.example.com/wiki/RunBook/AlwaysFiring",
+        "startsAt": "2024-12-30T06:04:14.336Z"
+      },
+      "correlate": [],
+      "createTime": "2024-12-30T08:45:38.119Z",
+      "customer": null,
+      "duplicateCount": 15,
+      "environment": "Production",
+      "event": "AlwaysFiring",
+      "group": "Prometheus",
+      "history": [],
+      "href": "http://localhost:8080/api/alert/06bb54ca-9203-4a96-946e-cb8826c2d31a",
+      "id": "06bb54ca-9203-4a96-946e-cb8826c2d31a",
+      "lastReceiveId": "f9e63c9b-d7db-432a-a7d6-2b3bb0835da8",
+      "lastReceiveTime": "2024-12-30T08:55:36.667Z",
+      "origin": "prometheus/-",
+      "previousSeverity": "indeterminate",
+      "rawData": null,
+      "receiveTime": "2024-12-30T08:45:38.125Z",
+      "repeat": true,
+      "resource": "n/a",
+      "service": [
+        ""
+      ],
+      "severity": "warning",
+      "status": "open",
+      "tags": [],
+      "text": "CRITICAL: Node not ready",
+      "timeout": 86400,
+      "trendIndication": "moreSevere",
+      "type": "prometheusAlert",
+      "updateTime": "2024-12-30T08:45:38.125Z",
+      "value": "--"
+    },
+    {
+      "attributes": {
+        "endsAt": "0001-01-01T00:00:00Z",
+        "externalUrl": "http://LAPTOP-VB9I5SHF:9093",
+        "isOutOfHours": false,
+        "moreInfo": "<a href=\"http://LAPTOP-VB9I5SHF:9090/graph?g0.expr=vector%281%29&g0.tab=1\" target=\"_blank\">Prometheus Graph</a>",
+        "runBookUrl": "http://www.example.com/wiki/RunBook/AlwaysFiring3",
+        "startsAt": "2024-12-30T06:04:14.336Z"
+      },
+      "correlate": [],
+      "createTime": "2024-12-30T08:45:38.103Z",
+      "customer": null,
+      "duplicateCount": 15,
+      "environment": "Production",
+      "event": "AlwaysFiring3",
+      "group": "Prometheus",
+      "history": [],
+      "href": "http://localhost:8080/api/alert/8b80b31a-1734-4152-a032-687210f4be5c",
+      "id": "8b80b31a-1734-4152-a032-687210f4be5c",
+      "lastReceiveId": "a2ed110e-28bf-4860-8731-4899220a994d",
+      "lastReceiveTime": "2024-12-30T08:55:36.676Z",
+      "origin": "prometheus/-",
+      "previousSeverity": "indeterminate",
+      "rawData": null,
+      "receiveTime": "2024-12-30T08:45:38.108Z",
+      "repeat": true,
+      "resource": "n/a",
+      "service": [
+        ""
+      ],
+      "severity": "minor",
+      "status": "open",
+      "tags": [],
+      "text": "CRITICAL: Pod is stuck in CrashLoopBackOff",
+      "timeout": 86400,
+      "trendIndication": "moreSevere",
+      "type": "prometheusAlert",
+      "updateTime": "2024-12-30T08:45:38.108Z",
+      "value": "--"
+    },
+    {
+      "attributes": {
+        "endsAt": "0001-01-01T00:00:00Z",
+        "externalUrl": "http://LAPTOP-VB9I5SHF:9093",
+        "isOutOfHours": false,
+        "moreInfo": "<a href=\"http://LAPTOP-VB9I5SHF:9090/graph?g0.expr=vector%281%29&g0.tab=1\" target=\"_blank\">Prometheus Graph</a>",
+        "runBookUrl": "http://www.example.com/wiki/RunBook/AlwaysFiring4",
+        "startsAt": "2024-12-30T06:04:14.336Z"
+      },
+      "correlate": [],
+      "createTime": "2024-12-30T08:45:38.107Z",
+      "customer": null,
+      "duplicateCount": 15,
+      "environment": "Production",
+      "event": "AlwaysFiring4",
+      "group": "Prometheus",
+      "history": [],
+      "href": "http://localhost:8080/api/alert/65d7a659-521a-49df-800b-cead0ff466b1",
+      "id": "65d7a659-521a-49df-800b-cead0ff466b1",
+      "lastReceiveId": "4f4b9cda-0bfb-498d-874f-13102d767140",
+      "lastReceiveTime": "2024-12-30T08:55:36.678Z",
+      "origin": "prometheus/-",
+      "previousSeverity": "indeterminate",
+      "rawData": null,
+      "receiveTime": "2024-12-30T08:45:38.117Z",
+      "repeat": true,
+      "resource": "n/a",
+      "service": [
+        ""
+      ],
+      "severity": "critical",
+      "status": "open",
+      "tags": [],
+      "text": "CRITICAL: dor-dvd-isr-1: sssd not running",
+      "timeout": 86400,
+      "trendIndication": "moreSevere",
+      "type": "prometheusAlert",
+      "updateTime": "2024-12-30T08:45:38.117Z",
+      "value": "--"
+    }
+  ],
+  "autoRefresh": true,
+  "lastTime": "2024-12-30T08:55:36.678Z",
+  "more": false,
+  "page": 1,
+  "pageSize": 50,
+  "pages": 1,
+  "severityCounts": {
+    "critical": 3
+  },
+  "status": "ok",
+  "statusCounts": {
+    "open": 3
+  },
+  "total": 3
+}
