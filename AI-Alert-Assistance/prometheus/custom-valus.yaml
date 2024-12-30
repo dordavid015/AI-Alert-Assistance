@@ -1,0 +1,37 @@
+prometheus:
+ prometheusSpec:
+   serviceMonitorSelectorNilUsesHelmValues: false
+   serviceMonitorSelector: {}
+   serviceMonitorNamespaceSelector: {}
+   ruleSelector:
+      matchExpressions:
+       - key: prometheus
+         operator: Exists
+
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 1m
+    route:
+      group_by: ['alertname']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 30s
+      receiver: 'alerta'
+      routes:
+      - match:
+          alertname: DeadMansSwitch
+        receiver: 'null'
+      - match:
+        receiver: 'alerta'
+        continue: true
+    receivers:
+    - name: 'null'
+    - name: 'alerta'
+      webhook_configs:
+      - url: 'http://alerta-web.default.svc.cluster.local:8080/api/webhooks/prometheus'
+        send_resolved: false
+        http_config:
+          basic_auth:
+            username: admin@alerta.io
+            password: alerta

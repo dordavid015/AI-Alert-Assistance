@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: test-rules
+  namespace: default
+  labels:
+    prometheus: example-rules
+spec:
+  groups:
+  - name: test-alerts
+    rules:
+    - alert: TestAlertOne
+      expr: vector(1)
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Test alert 1 is firing"
+        description: "This is test alert 1"
+        
+    - alert: TestAlertTwo
+      expr: absent(nonexistent_metric) == 1
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Test alert 2 is firing"
+        description: "This is test alert 2"
+        
+    - alert: TestAlertThree
+      expr: sum(up) >= 0
+      for: 1m
+      labels:
+        severity: info
+      annotations:
+        summary: "Test alert 3 is firing"
+        description: "This is test alert 3"
+        
+    - alert: TestAlertFour
+      expr: vector(1) > vector(0)
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Test alert 4 is firing"
+        description: "This is test alert 4"
