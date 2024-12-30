@@ -1,0 +1,12 @@
+groups:
+  - name: example-alerts
+    rules:
+      - alert: HighMemoryUsage
+        expr: vector(1) # תמיד מחזיר ערך 1, מה שגורם להתראה להתקפץ
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage detected"
+          description: "This is a test alert to validate Alertmanager integration."
+

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alerta-db
+  labels:
+    app: alerta
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alerta
+      tier: db
+  template:
+    metadata:
+      labels:
+        app: alerta
+        tier: db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres
+          env:
+            - name: POSTGRES_DB
+              value: "monitoring"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres"
+          volumeMounts:
+            - name: pg-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pg-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alerta-db
+  labels:
+    app: alerta
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: alerta
+    tier: db
+
