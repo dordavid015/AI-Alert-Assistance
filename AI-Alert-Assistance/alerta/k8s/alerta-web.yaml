@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alerta-web
+  labels:
+    app: alerta
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alerta
+      tier: web
+  template:
+    metadata:
+      labels:
+        app: alerta
+        tier: web
+    spec:
+      containers:
+        - name: alerta
+          image: alerta/alerta-web
+          env:
+            - name: DEBUG
+              value: "1" # Remove this to turn off debug
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@alerta-db:5432/monitoring"
+            - name: AUTH_REQUIRED
+              value: "True"
+            - name: ADMIN_USERS
+              value: "admin@alerta.io,devops@alerta.io"
+            - name: ADMIN_KEY
+              value: "demo-key"
+            - name: PLUGINS
+              value: "reject,blackout,normalise,enhance"
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alerta-web
+  labels:
+    app: alerta
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+  selector:
+    app: alerta
+    tier: web
+
