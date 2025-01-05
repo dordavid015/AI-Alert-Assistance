@@ -26,15 +26,24 @@ export default {
     };
   },
   mounted() {
-    // Fetch the alerts data from the local file
-    fetch("/alerts.json")
-        .then((response) => response.json())
-        .then((data) => {
-          this.alerts = data.alerts; // Assign the alerts to the component's data
-        })
-        .catch((error) => {
-          console.error("Error fetching alerts:", error);
-        });
+    // Fetch the alerts data from the Alerta API
+    const ALERTA_API_KEY = "uZqtaZdkoMr40Gw9j7TgihS_4vK3DSniUNBDFdUr";
+    const ALERTA_URL = `http://localhost:8080/api/alerts?api-key=${ALERTA_API_KEY}`;
+
+    fetch(ALERTA_URL, {
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      this.alerts = data.alerts; // Assign the alerts to the component's data
+    })
+    .catch((error) => {
+      console.error("Error fetching alerts:", error);
+    });
   },
 };
 </script>

@@ -2,47 +2,49 @@
   <v-card>
     <v-toolbar>
       <v-text-field
-          label="Search Alerts"
-          v-model="searchQuery"
-          @input="filterAlerts"
+        label="Search Alerts"
+        v-model="searchQuery"
+        @input="filterAlerts"
       />
     </v-toolbar>
     <v-data-table
-        :headers="headers"
-        :items="filteredAlerts"
-        class="elevation-1"
-        item-value="id"
+      :headers="headers"
+      :items="filteredAlerts"
+      class="elevation-1"
+      item-value="id"
     >
       <template #item="{ item }">
         <tr
-            @contextmenu.prevent="openContextMenu($event, item)"
-            :style="{ backgroundColor: getSeverityColor(item.severity) }"
-            style="cursor: context-menu"
+          @contextmenu.prevent="openContextMenu($event, item)"
+          :style="{ backgroundColor: getSeverityColor(item.severity) }"
+          style="cursor: context-menu"
         >
           <td>{{ item.id }}</td>
           <td>{{ item.environment }}</td>
           <td>{{ item.status }}</td>
           <td>{{ item.severity }}</td>
           <td>{{ item.text }}</td>
-          <td>{{ item.duplicateCount }}</td> <!-- Add the duplicateCount here -->
-          <td v-html="item.attributes.moreInfo"></td>
+          <td>{{ item.duplicateCount }}</td>
+          <!-- Add the duplicateCount here -->
+          <a :href="getSolutionUrl(item.text)">Suggest solution</a
+          >
         </tr>
       </template>
     </v-data-table>
 
     <!-- Context Menu -->
     <v-menu
-        v-model="contextMenuVisible"
-        :position-x="contextMenuPosition.x"
-        :position-y="contextMenuPosition.y"
-        absolute
-        offset-y
+      v-model="contextMenuVisible"
+      :position-x="contextMenuPosition.x"
+      :position-y="contextMenuPosition.y"
+      absolute
+      offset-y
     >
       <v-list>
         <v-list-item
-            v-for="(option, index) in menuOptions"
-            :key="index"
-            @click="handleMenuOption(option)"
+          v-for="(option, index) in menuOptions"
+          :key="index"
+          @click="handleMenuOption(option)"
         >
           <v-list-item-title>{{ option.label }}</v-list-item-title>
         </v-list-item>
@@ -70,9 +72,7 @@ export default {
       contextMenuVisible: false,
       contextMenuPosition: { x: 0, y: 0 },
       selectedAlert: null,
-      menuOptions: [
-        { label: "Suggest solution", action: "suggestSolution" },
-      ],
+      menuOptions: [{ label: "Suggest solution", action: "suggestSolution" }],
     };
   },
   watch: {
@@ -87,11 +87,11 @@ export default {
     filterAlerts() {
       const query = this.searchQuery.toLowerCase();
       this.filteredAlerts = this.alerts.filter(
-          (alert) =>
-              alert.text.toLowerCase().includes(query) ||
-              alert.severity.toLowerCase().includes(query) ||
-              alert.environment.toLowerCase().includes(query) ||
-              String(alert.id).includes(query)
+        (alert) =>
+          alert.text.toLowerCase().includes(query) ||
+          alert.severity.toLowerCase().includes(query) ||
+          alert.environment.toLowerCase().includes(query) ||
+          String(alert.id).includes(query)
       );
     },
     getSeverityColor(severity) {
@@ -110,14 +110,20 @@ export default {
     handleMenuOption(option) {
       if (option.action === "suggestSolution" && this.selectedAlert) {
         const alertMessage = encodeURIComponent(this.selectedAlert.text);
-        const url = `http://localhost:8081/#/${alertMessage}`;
+        const url = `http://localhost:8082/#/${encodeURIComponent(
+          this.selectedAlert.text
+        )}`;
         window.open(
-            url,
-            "_blank",
-            "width=800,height=600,scrollbars=yes,resizable=yes"
+          url,
+          "_blank",
+          "width=800,height=600,scrollbars=yes,resizable=yes"
         );
       }
       this.contextMenuVisible = false; // Close the menu
+    },
+    getSolutionUrl(alertText) {
+      const alertMessage = encodeURIComponent(alertText);
+      return `http://localhost:8082/#/${alertMessage}`;
     },
   },
 };

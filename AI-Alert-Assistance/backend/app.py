@@ -52,7 +52,7 @@ def chat_with_ollama(messages, model_name="custom-model"):
 
 def process_kafka_message(message):
     user_query = message.value.decode('utf-8').replace('"', '')
-    user_query = user_query + ". give me 5 lines answer"
+    user_query = user_query +'.give me 5 lines answer'
     print(f"Processing query: {user_query}")
     
     # Create the JSON payload
@@ -70,6 +70,7 @@ def process_kafka_message(message):
     
     json_payload = json.dumps(payload).replace('"', '\\"')
     curl_cmd = f'curl -s -X POST http://localhost:11435/v1/chat/completions -H "Content-Type: application/json" -d "{json_payload}" | jq -r \'.choices[0].message.content\''
+    print(curl_cmd)
     result = os.popen(curl_cmd).read()
     
     # Store query and response in the database

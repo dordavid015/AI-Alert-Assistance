@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-image-alerts
+  namespace: default
+  labels:
+    prometheus: example-rules
+spec:
+  groups:
+  - name: kubernetes-image-alerts
+    rules:
+    - alert: PodImagePullBackOff
+      expr: kube_pod_container_status_waiting_reason{reason="ImagePullBackOff"} > 0
+      for: 30s
+      labels:
+        severity: critical
+        team: paas
+      annotations:
+        summary: "Pod {{ $labels.pod }} has ImagePullBackOff"
+        description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been unable to pull its image for more than 30s seconds."
+        runbook_url: "https://kubernetes.io/docs/concepts/containers/images/#image-pull-backoff"

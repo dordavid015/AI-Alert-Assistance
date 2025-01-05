@@ -1,0 +1,30 @@
+K8S Based: 
+  alerta: WEB + DB
+  OpenFaas
+  Prometheus Stack
+
+Docker:
+  Kafka + ZOOK
+  DB
+
+Manuel:
+  App
+  Alerts to Kafka
+
+
+Ideas:
+  1. Prometheus exporter - export number of search
+  2. akhq - kafka gui
+  3. Dynamic summary
+
+Must do:
+  1. dockerize:
+    - Main App
+    - Elisha's App
+    - kakfa + zooki
+    - DB
+    - Alerts generator
+  2. Improve Ui - change css
+  3. HELM 
+
+

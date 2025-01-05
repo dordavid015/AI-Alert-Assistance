@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crash-pod
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crash-pod
+  template:
+    metadata:
+      labels:
+        app: crash-pod
+    spec:
+      containers:
+      - name: crash-container
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args:
+          - "sleep 10; nonexistentcommand"
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: crash-pod-alerts
+  namespace: default
+  labels:
+    prometheus: example-rules
+spec:
+  groups:
+  - name: crash-pod-alerts
+    rules:
+    - alert: CrashPodFrequentRestarts
+      expr: increase(kube_pod_container_status_restarts_total{container="crash-container"}[1h]) > 5
+      for: 2m
+      labels:
+        severity: critical
+        app: crash-pod
+      annotations:
+        summary: "Crash-pod restarting frequently"
+        description: |
+          Pod {{ $labels.pod }} has restarted more than 5 times in the last hour
+          Container: {{ $labels.container }}
+          Namespace: {{ $labels.namespace }}
+          Node: {{ $labels.node }}

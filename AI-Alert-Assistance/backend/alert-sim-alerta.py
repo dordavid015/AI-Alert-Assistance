@@ -5,8 +5,8 @@ import time
 from datetime import datetime, timedelta
 
 # Alerta and Kafka configurations
-ALERTA_URL = "http://localhost:8080/api/alerts"  # Replace with your Alerta server URL
-ALERTA_API_KEY = "NWGKPxkcEy1DYOWLVuvg_Zbr_Jx7gxXjD7CPGwk6"  # Replace with your Alerta API key
+ALERTA_URL = "http://localhost:8081/api/alerts"  # Replace with your Alerta server URL
+ALERTA_API_KEY = "CwhfNd_09NRlBFVtS1S5RCOgGvFG-H4aV8Q6L0jP"  # Replace with your Alerta API key
 KAFKA_BROKER = "localhost:9092"  # Kafka broker address
 KAFKA_TOPIC = "k8s-alerts"  # Kafka topic
 

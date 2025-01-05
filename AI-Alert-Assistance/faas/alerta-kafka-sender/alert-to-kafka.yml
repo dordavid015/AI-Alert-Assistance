@@ -1,0 +1,16 @@
+# alert-to-kafka.yml
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080  # Adjust this to your OpenFaaS gateway address
+functions:
+  alert-to-kafka:
+    lang: python3
+    handler: ./alert-to-kafka
+    image: dordavidisrael/alert-to-kafka:latest  # Replace with your Docker Hub username
+    environment:
+      write_debug: true
+    annotations:
+      schedule: "*/1 * * * *"  # Run every minute
+      topic: cron-function
+

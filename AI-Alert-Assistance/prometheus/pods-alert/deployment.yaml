@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crash-test
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crash-test
+  template:
+    metadata:
+      labels:
+        app: crash-test
+    spec:
+      containers:
+      - name: crash-container
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args:
+          - "sleep 10; exit 1"

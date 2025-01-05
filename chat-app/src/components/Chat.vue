@@ -1,68 +1,108 @@
 <template>
   <div class="chat-container">
     <div class="chat-box">
-      <div v-for="(message, index) in chatMessages" :key="index" :class="message.fromUser ? 'user-message' : 'server-message'">
-        <p>{{ message.text }}</p>
+      <div
+        v-for="(message, index) in chatMessages"
+        :key="index"
+        :class="message.role === 'user' ? 'user-message' : 'server-message'"
+      >
+        <p>{{ message.content }}</p>
       </div>
     </div>
     <div class="chat-input">
-      <input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Type your message..." />
+      <input
+        v-model="newMessage"
+        @keyup.enter="sendMessage"
+        placeholder="Type your message..."
+      />
       <button @click="sendMessage">Send</button>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
-  props: ['chatId'], // Get the chatId from the URL
+  props: ["chatId"],
   data() {
     return {
       chatMessages: [],
-      newMessage: '',
+      newMessage: "",
+      streamingMessageIndex: null, // Index of the message being streamed
     };
   },
   mounted() {
-    // If the chatId is present in the URL, treat it as the user's first message
     if (this.chatId) {
-      const initialMessage = decodeURIComponent(this.chatId).replace(/%3A/g, ':');
+      const initialMessage = decodeURIComponent(this.chatId).replace(
+        /%3A/g,
+        ":"
+      );
       this.chatMessages.push({
-        text: initialMessage,
-        fromUser: true,
+        role: "user",
+        content: initialMessage,
       });
-      this.sendMessageToServer(); // Send the first message to the server
+      this.sendMessageToServer();
     }
   },
   methods: {
     sendMessage() {
-      if (this.newMessage.trim() === '') return;
+      if (this.newMessage.trim() === "") return;
 
-      // Add the user's message to the chat
       this.chatMessages.push({
-        text: this.newMessage,
-        fromUser: true,
+        role: "user",
+        content: this.newMessage,
       });
 
-      // Send the entire chat history to the server
       this.sendMessageToServer();
-      this.newMessage = ''; // Clear the input field
+      this.newMessage = "";
     },
     async sendMessageToServer() {
-      try {
-        // Send the entire chat history (including the new message) to the server
-        const response = await axios.post('http://localhost:5000/chat', {
-          chatMessages: this.chatMessages,
+      const params = new URLSearchParams({
+        chatMessages: JSON.stringify(this.chatMessages),
+      });
+
+      const eventSource = new EventSource(
+        `http://localhost:5000/message_stream?${params.toString()}`
+      );
+
+      // Add a placeholder message while waiting for the server's response
+      const placeholderIndex = this.chatMessages.length;
+      this.chatMessages.push({
+        role: "system",
+        content: "...", // Placeholder message
+      });
+
+      let streamingContent = "";
+
+      eventSource.onmessage = (event) => {
+        const data = event.data;
+
+        // Replace the placeholder message with the actual content
+        if (this.chatMessages[placeholderIndex].content === "...") {
+          this.$set(this.chatMessages, placeholderIndex, {
+            role: "system",
+            content: "",
+          });
+        }
+
+        streamingContent += data;
+
+        // Update the message with the streamed content
+        this.$set(this.chatMessages, placeholderIndex, {
+          role: "system",
+          content: streamingContent,
         });
 
-        // Add the server's response to the chat
-        this.chatMessages.push({
-          text: response.data.reply,
-          fromUser: false,
+        // Scroll to the latest message
+        this.$nextTick(() => {
+          const chatBox = document.querySelector(".chat-box");
+          chatBox.scrollTop = chatBox.scrollHeight;
         });
-      } catch (error) {
-        console.error('Error sending message to server:', error);
-      }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error("Error streaming response:", error);
+        eventSource.close();
+      };
     },
   },
 };
@@ -73,7 +113,8 @@ export default {
   box-sizing: border-box;
 }
 
-body, html {
+body,
+html {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -142,5 +183,11 @@ body, html {
   border-radius: 5px;
   max-width: 75%; /* Limit the width of the server's message */
   margin-right: auto; /* Align the server's messages to the left */
+}
+
+.user-message,
+.server-message {
+  white-space: pre-wrap; /* Preserve line breaks and wrap text */
+  word-wrap: break-word; /* Ensure long words wrap */
 }
 </style>
