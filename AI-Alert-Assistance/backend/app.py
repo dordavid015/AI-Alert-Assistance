@@ -69,6 +69,7 @@ def process_kafka_message(message):
     }
     
     json_payload = json.dumps(payload).replace('"', '\\"')
+    print(json_payload)
     curl_cmd = f'curl -s -X POST http://localhost:11435/v1/chat/completions -H "Content-Type: application/json" -d "{json_payload}" | jq -r \'.choices[0].message.content\''
     print(curl_cmd)
     result = os.popen(curl_cmd).read()

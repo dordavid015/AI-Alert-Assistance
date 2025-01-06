@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Interactive Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #questionInput {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #responseArea {
+            min-height: 200px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+        #askButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #askButton:hover {
+            background-color: #45a049;
+        }
+        #askButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <textarea id="questionInput" placeholder="Enter your question here..." rows="3"></textarea>
+        <button id="askButton" onclick="askQuestion()">Ask Question</button>
+        <div id="responseArea">Response will appear here...</div>
+    </div>
+
+    <script>
+        const responseArea = document.getElementById('responseArea');
+        const questionInput = document.getElementById('questionInput');
+        const askButton = document.getElementById('askButton');
+
+        async function askQuestion() {
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            responseArea.textContent = '';
+            askButton.disabled = true;
+            
+            try {
+                const response = await fetch('/dor', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: question })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value);
+                    responseArea.textContent += text;
+                    // Auto-scroll to bottom
+                    responseArea.scrollTop = responseArea.scrollHeight;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                responseArea.textContent = 'Error occurred while fetching response';
+            } finally {
+                askButton.disabled = false;
+            }
+        }
+
+        // Allow Enter key to submit (Shift+Enter for new line)
+        questionInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                askQuestion();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,15 +1,16 @@
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 import os
+from flask_cors import CORS
 import json
 import psycopg2
 from kafka import KafkaConsumer
 from threading import Thread
 import time
 import requests
-from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
+
 
 DB_PARAMS = {
     'dbname': 'querydb',
@@ -39,19 +40,16 @@ def init_db():
     cur.close()
     conn.close()
 
-def chat_with_ollama(input, model_name="custom-model"):
-
+def chat_with_ollama(messages, model_name="custom-model"):
     payload = {
         "model": model_name,
-        "messages": input,
+        "messages": messages,
         "stream": True,
         "max_tokens": 150,
         "temperature": 0.7,
         "top_p": 0.9
     }
-
-    json_payload = json.dumps(payload).replace('"', '\\"')
-    print(json_payload)
+    
     def stream_generator():
         response = requests.post(
             "http://localhost:11435/v1/chat/completions",
@@ -59,6 +57,7 @@ def chat_with_ollama(input, model_name="custom-model"):
             stream=True
         )
         
+        collected_response = ""
         for line in response.iter_lines():
             if line:
                 line = line.decode('utf-8')
@@ -70,15 +69,17 @@ def chat_with_ollama(input, model_name="custom-model"):
                             delta = chunk['choices'][0].get('delta', {})
                             if 'content' in delta:
                                 content = delta['content']
-                                yield content  # Yield each piece of content
+                                collected_response += content
+                                print(content, end='', flush=True)
                     except json.JSONDecodeError:
                         continue
+        return collected_response
 
     return stream_generator()
 
-
 def process_kafka_message(message):
     user_query = message.value.decode('utf-8').replace('"', '')
+    user_query = user_query +'.give me 5 lines answer'
     print(f"Processing query: {user_query}")
     
     messages = [
@@ -110,33 +111,6 @@ def kafka_listener():
     for message in consumer:
         process_kafka_message(message)
 
-@app.route('/message_stream', methods=['GET'])
-def message_stream():
-    print("/messageeeee")
-    try:
-        # Extract chatMessages from query parameters or elsewhere if needed
-        chat_messages = request.args.get('chatMessages', '[]')
-        chat_messages = json.loads(chat_messages)
-
-        print("Received chat messages:")
-        for message in chat_messages:
-            print(f"Role: {message['role']}, Content: {message['content']}")
-
-        def generate_stream():
-            try:
-                messages = [{"role": m["role"], "content": m["content"]} for m in chat_messages]
-                for chunk in chat_with_ollama(messages):
-                    print (f"chunk is: {chunk}")
-                    yield f"data: {chunk}\n\n"  # Send each chunk as an SSE
-            except Exception as e:
-                yield f"data: Error streaming response: {e}\n\n"
-
-        return Response(stream_with_context(generate_stream()), content_type='text/event-stream')
-
-    except Exception as e:
-        print(f"Error processing request: {e}")
-        return jsonify({"error": "Something went wrong"}), 500
-
 @app.route('/')
 def index():
     conn = get_db_connection()
@@ -150,6 +124,40 @@ def index():
 @app.route('/chat')
 def chat():
     return render_template('chat.html')
+
+@app.route('/dor', methods=['POST'])
+def dor_chat():
+    data = request.get_json()
+    query = data.get('query', '')
+    
+    def generate_response():
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a network admin and linux servers and K8s expert helping solve SRE issues in air-gapped env."
+            },
+            {"role": "user", "content": query}
+        ]
+        
+        try:
+            for chunk in chat_with_ollama(messages):
+                yield chunk
+                
+        except Exception as e:
+            yield f"Error: {str(e)}"
+    
+    return Response(
+        generate_response(),
+        mimetype='text/plain',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Transfer-Encoding': 'chunked'
+        }
+    )
+
+@app.route('/dor_chat')
+def dor_chat_page():
+    return render_template('dor_chat.html')
 
 if __name__ == '__main__':
     init_db()

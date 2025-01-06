@@ -9,7 +9,7 @@ import requests
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 DB_PARAMS = {
     'dbname': 'querydb',
@@ -40,7 +40,6 @@ def init_db():
     conn.close()
 
 def chat_with_ollama(input, model_name="custom-model"):
-
     payload = {
         "model": model_name,
         "messages": input,
@@ -52,6 +51,7 @@ def chat_with_ollama(input, model_name="custom-model"):
 
     json_payload = json.dumps(payload).replace('"', '\\"')
     print(json_payload)
+    
     def stream_generator():
         response = requests.post(
             "http://localhost:11435/v1/chat/completions",
@@ -70,12 +70,15 @@ def chat_with_ollama(input, model_name="custom-model"):
                             delta = chunk['choices'][0].get('delta', {})
                             if 'content' in delta:
                                 content = delta['content']
-                                yield content  # Yield each piece of content
+                                yield content
                     except json.JSONDecodeError:
                         continue
 
     return stream_generator()
 
+def collect_full_response(generator):
+    """Collects all content from the generator into a single string."""
+    return ''.join(list(generator))
 
 def process_kafka_message(message):
     user_query = message.value.decode('utf-8').replace('"', '')
@@ -89,15 +92,19 @@ def process_kafka_message(message):
         {"role": "user", "content": user_query},
     ]
     
-    result = chat_with_ollama(messages)
+    # Get the generator from chat_with_ollama
+    response_generator = chat_with_ollama(messages)
+    
+    # Collect the full response before storing in database
+    full_response = collect_full_response(response_generator)
     
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('INSERT INTO queries (query_text, response) VALUES (%s, %s)', (user_query, result))
+    cur.execute('INSERT INTO queries (query_text, response) VALUES (%s, %s)', (user_query, full_response))
     conn.commit()
     cur.close()
     conn.close()
-    print(f"Query processed and stored: {result}")
+    print(f"Query processed and stored: {full_response}")
 
 def kafka_listener():
     consumer = KafkaConsumer(
@@ -114,7 +121,6 @@ def kafka_listener():
 def message_stream():
     print("/messageeeee")
     try:
-        # Extract chatMessages from query parameters or elsewhere if needed
         chat_messages = request.args.get('chatMessages', '[]')
         chat_messages = json.loads(chat_messages)
 
@@ -126,8 +132,7 @@ def message_stream():
             try:
                 messages = [{"role": m["role"], "content": m["content"]} for m in chat_messages]
                 for chunk in chat_with_ollama(messages):
-                    print (f"chunk is: {chunk}")
-                    yield f"data: {chunk}\n\n"  # Send each chunk as an SSE
+                    yield f"data: {chunk}\n\n"
             except Exception as e:
                 yield f"data: Error streaming response: {e}\n\n"
 
