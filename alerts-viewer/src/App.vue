@@ -27,7 +27,7 @@ export default {
   },
   mounted() {
     // Fetch the alerts data from the Alerta API
-    const ALERTA_API_KEY = "uZqtaZdkoMr40Gw9j7TgihS_4vK3DSniUNBDFdUr";
+    const ALERTA_API_KEY = "64_hXcmnYSfGKPvtCnXK6OSlZMSYxljU-MCY3VnC"
     const ALERTA_URL = `http://localhost:8080/api/alerts?api-key=${ALERTA_API_KEY}`;
 
     fetch(ALERTA_URL, {

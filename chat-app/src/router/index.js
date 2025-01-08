@@ -7,7 +7,7 @@ Vue.use(Router);
 export default new Router({
   routes: [
     {
-      path: '/:chatId?',
+      path: '/:suburl?',
       name: 'chat',
       component: Chat,
       props: true, // Pass the chatId as a prop
