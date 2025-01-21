@@ -4,11 +4,11 @@
       <div class="app-container">
         <!-- Gauges Section -->
         <div class="gauges-row">
-          <Gauges :alerts="alerts" />
+          <Gauges :alerts="alerts"/>
         </div>
         <!-- Alert Table Section -->
         <div class="alert-table">
-          <AlertTable :alerts="alerts" />
+          <AlertTable :alerts="alerts"/>
         </div>
       </div>
     </v-main>
@@ -31,8 +31,9 @@ export default {
   },
   mounted() {
     // Fetch the alerts data from the Alerta API
-    const ALERTA_API_KEY = "64_hXcmnYSfGKPvtCnXK6OSlZMSYxljU-MCY3VnC";
-    const ALERTA_URL = `./alerts.json`; // Replace with your actual API endpoint
+    const ALERTA_API_KEY = process.env.VUE_APP_ALERTA_API_KEY;
+    const ALERTA_URL = process.env.VUE_APP_ALERTA_GET_ALERTS_URL;
+
 
     fetch(ALERTA_URL, {
       headers: {
@@ -64,7 +65,8 @@ export default {
 }
 
 .gauges-row {
-  height: 30%; /* Gauges section occupies 30% of the screen height */    height: 30%;
+  height: 30%; /* Gauges section occupies 30% of the screen height */
+  height: 30%;
   width: 100%;
   display: flex;
   align-items: center;

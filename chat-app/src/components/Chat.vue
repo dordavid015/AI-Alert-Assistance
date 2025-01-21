@@ -7,7 +7,7 @@
           :class="['message', message.role === 'user' ? 'user-message' : 'assistant-message']"
       >
         <div v-if="message.role === 'assistant'" class="message-wrapper assistant-message">
-          <div class="icon-assistant">🤖</div>
+          <img class="icon-assistant" src="/OfekUnit.png" alt="logo"/>
           <div class="message-content formatted-response">
             <pre>{{ message.content }}</pre>
             <div class="timestamp">{{ formatTimestamp(message.timestamp) }}</div>
@@ -35,7 +35,7 @@
             :disabled="isLoading || !questionInput.trim()"
             @click="askQuestion"
         >
-          <img src="@/assets/sendIcon.svg" alt="Send" class="send-icon" />
+          <img src="@/assets/sendIcon.svg" alt="Send" class="send-icon"/>
         </button>
       </div>
     </div>
@@ -92,9 +92,9 @@ export default {
       this.isLoading = true;
 
       try {
-        const response = await fetch('http://localhost:5000/dor', {
+        const response = await fetch(process.env.VUE_APP_MODEL_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             query: question,
             history: this.messages.map((msg) => ({
@@ -109,7 +109,7 @@ export default {
         let fullResponse = '';
 
         while (true) {
-          const { done, value } = await reader.read();
+          const {done, value} = await reader.read();
           if (done) break;
           const text = decoder.decode(value);
           fullResponse += text;

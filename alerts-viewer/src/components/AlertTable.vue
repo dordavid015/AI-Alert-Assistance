@@ -106,7 +106,7 @@ export default {
     getSolutionUrl(alertText) {
       const alertMessage = encodeURIComponent(alertText);
       // Open a new window (not just a new tab)
-      const chatUrl = `http://localhost:8081/#/${alertMessage}`;
+      const chatUrl = `${process.env.VUE_APP_CHAT_URL}${alertMessage}`;
       window.open(chatUrl, "chatWindow", "width=800,height=600,scrollbars=yes,resizable=yes");
     },
   }
