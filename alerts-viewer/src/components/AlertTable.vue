@@ -1,23 +1,35 @@
 <template>
   <v-card>
-    <v-toolbar>
-      <v-text-field
-        label="Search Alerts"
-        v-model="searchQuery"
-        @input="filterAlerts"
-      />
-    </v-toolbar>
     <v-data-table
-      :headers="headers"
-      :items="filteredAlerts"
-      class="elevation-1"
-      item-value="id"
+        :headers="headers"
+        :items="filteredAlerts"
+        class="elevation-1"
+        item-value="id"
     >
+      <!-- Table Toolbar with Search Bar -->
+      <template #top>
+        <v-toolbar flat>
+          <v-toolbar-title>Alerts</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-text-field
+              label="Search Alerts"
+              v-model="searchQuery"
+              @input="filterAlerts"
+              solo
+              append-icon="mdi-magnify"
+              hide-details
+              dense
+              class="search-bar"
+          />
+        </v-toolbar>
+      </template>
+
+      <!-- Table rows -->
       <template #item="{ item }">
         <tr
-          @contextmenu.prevent="openContextMenu($event, item)"
-          :style="{ backgroundColor: getSeverityColor(item.severity) }"
-          style="cursor: context-menu"
+            @contextmenu.prevent="openContextMenu($event, item)"
+            :style="{ backgroundColor: getSeverityColor(item.severity) }"
+            style="cursor: context-menu"
         >
           <td>{{ item.id }}</td>
           <td>{{ item.environment }}</td>
@@ -26,30 +38,10 @@
           <td>{{ item.text }}</td>
           <td>{{ item.duplicateCount }}</td>
           <!-- Add the duplicateCount here -->
-          <a :href="getSolutionUrl(item.text)">Suggest solution</a
-          >
+          <a @click.prevent="getSolutionUrl(item.text)">Suggest solution</a>
         </tr>
       </template>
     </v-data-table>
-
-    <!-- Context Menu -->
-    <v-menu
-      v-model="contextMenuVisible"
-      :position-x="contextMenuPosition.x"
-      :position-y="contextMenuPosition.y"
-      absolute
-      offset-y
-    >
-      <v-list>
-        <v-list-item
-          v-for="(option, index) in menuOptions"
-          :key="index"
-          @click="handleMenuOption(option)"
-        >
-          <v-list-item-title>{{ option.label }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
   </v-card>
 </template>
 
@@ -72,7 +64,6 @@ export default {
       contextMenuVisible: false,
       contextMenuPosition: { x: 0, y: 0 },
       selectedAlert: null,
-      menuOptions: [{ label: "Suggest solution", action: "suggestSolution" }],
     };
   },
   watch: {
@@ -87,44 +78,55 @@ export default {
     filterAlerts() {
       const query = this.searchQuery.toLowerCase();
       this.filteredAlerts = this.alerts.filter(
-        (alert) =>
-          alert.text.toLowerCase().includes(query) ||
-          alert.severity.toLowerCase().includes(query) ||
-          alert.environment.toLowerCase().includes(query) ||
-          String(alert.id).includes(query)
+          (alert) =>
+              alert.text.toLowerCase().includes(query) ||
+              alert.severity.toLowerCase().includes(query) ||
+              alert.environment.toLowerCase().includes(query) ||
+              String(alert.id).includes(query)
       );
     },
     getSeverityColor(severity) {
       const colors = {
-        critical: "rgba(255, 0, 0, 0.2)", // Light red
-        warning: "rgba(255, 165, 0, 0.2)", // Light orange
-        minor: "rgba(255, 255, 0, 0.2)", // Light yellow
+        security: "#D3D3D3",
+        critical: "#FFB3B3",
+        major: "#FFCCB3",
+        minor: "#FFF3B3",
+        warning: "#B3D9FF",
+        informational: "#B3E6B3",
+        debug: "#E6CCFF",
+        trace: "#E6E6E6",
+        indeterminate: "#F0F0F0",
+        cleared: "#B3E6B3",
+        normal: "#B3E6B3",
+        ok: "#B3E6B3",
+        unknown: "#E0E0E0",
       };
       return colors[severity.toLowerCase()] || "transparent";
     },
-    openContextMenu(event, alert) {
-      this.contextMenuVisible = true;
-      this.contextMenuPosition = { x: event.clientX, y: event.clientY };
-      this.selectedAlert = alert;
-    },
-    handleMenuOption(option) {
-      if (option.action === "suggestSolution" && this.selectedAlert) {
-        const alertMessage = encodeURIComponent(this.selectedAlert.text);
-        const url = `http://localhost:8082/#/${encodeURIComponent(
-          this.selectedAlert.text
-        )}`;
-        window.open(
-          url,
-          "_blank",
-          "width=800,height=600,scrollbars=yes,resizable=yes"
-        );
-      }
-      this.contextMenuVisible = false; // Close the menu
-    },
     getSolutionUrl(alertText) {
       const alertMessage = encodeURIComponent(alertText);
-      return `http://localhost:8082/#/${alertMessage}`;
+      // Open a new window (not just a new tab)
+      const chatUrl = `${process.env.VUE_APP_CHAT_URL}${alertMessage}`;
+      window.open(chatUrl, "chatWindow", "width=800,height=600,scrollbars=yes,resizable=yes");
     },
-  },
+  }
 };
 </script>
+
+<style scoped>
+.search-bar {
+  max-width: 400px; /* Make sure it does not take too much width */
+}
+
+.v-toolbar-title {
+  font-weight: bold;
+}
+
+.v-spacer {
+  flex-grow: 1;
+}
+
+.v-data-table {
+  margin-top: 20px;
+}
+</style>

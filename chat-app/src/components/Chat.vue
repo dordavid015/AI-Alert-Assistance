@@ -2,32 +2,42 @@
   <div class="chat-container">
     <div id="chatHistory" class="chat-history">
       <div
-        v-for="(message, index) in messages"
-        :key="index"
-        :class="['message', message.role === 'user' ? 'user-message' : 'assistant-message']"
+          v-for="(message, index) in messages"
+          :key="index"
+          :class="['message', message.role === 'user' ? 'user-message' : 'assistant-message']"
       >
-        <div v-if="message.role === 'assistant'" class="formatted-response">
-          <pre>{{ message.content }}</pre>
+        <div v-if="message.role === 'assistant'" class="message-wrapper assistant-message">
+          <img class="icon-assistant" src="/OfekUnit.png" alt="logo"/>
+          <div class="message-content formatted-response">
+            <pre>{{ message.content }}</pre>
+            <div class="timestamp">{{ formatTimestamp(message.timestamp) }}</div>
+          </div>
         </div>
-        <div v-else v-html="message.content"></div>
-        <div class="timestamp">{{ formatTimestamp(message.timestamp) }}</div>
+        <div v-else class="message-wrapper user-message">
+          <div class="message-content">
+            <pre>{{ message.content }}</pre>
+            <div class="timestamp">{{ formatTimestamp(message.timestamp) }}</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="input-area">
-      <textarea
-        v-model="questionInput"
-        id="questionInput"
-        placeholder="Type your message..."
-        rows="2"
-        @keydown.enter.prevent="handleEnter"
-      ></textarea>
-      <button
-        id="askButton"
-        :disabled="isLoading || !questionInput.trim()"
-        @click="askQuestion"
-      >
-        Send
-      </button>
+      <div class="input-wrapper">
+        <textarea
+            v-model="questionInput"
+            id="questionInput"
+            placeholder="Type your message..."
+            rows="1"
+            @keydown="handleKeydown"
+        ></textarea>
+        <button
+            id="sendButton"
+            :disabled="isLoading || !questionInput.trim()"
+            @click="askQuestion"
+        >
+          <img src="@/assets/sendIcon.svg" alt="Send" class="send-icon"/>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -51,7 +61,7 @@ export default {
     if (this.suburl) {
       this.addMessage(this.suburl, 'user');
       this.askQuestion();
-      await this.submitQuestions(this.suburl)
+      await this.submitQuestions(this.suburl);
     }
   },
   methods: {
@@ -69,7 +79,9 @@ export default {
     async askQuestion() {
       if (!this.questionInput.trim() && !this.isLoading) return;
 
-      const question = this.isLoading ? this.messages[this.messages.length - 1].content : this.questionInput.trim();
+      const question = this.isLoading
+          ? this.messages[this.messages.length - 1].content
+          : this.questionInput.trim();
       if (!this.isLoading) {
         this.addMessage(question, 'user');
         this.questionInput = '';
@@ -80,9 +92,9 @@ export default {
       this.isLoading = true;
 
       try {
-        const response = await fetch('http://localhost:5000/dor', {
+        const response = await fetch(process.env.VUE_APP_MODEL_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             query: question,
             history: this.messages.map((msg) => ({
@@ -97,7 +109,7 @@ export default {
         let fullResponse = '';
 
         while (true) {
-          const { done, value } = await reader.read();
+          const {done, value} = await reader.read();
           if (done) break;
           const text = decoder.decode(value);
           fullResponse += text;
@@ -121,8 +133,11 @@ export default {
         this.addMessage(content, role);
       }
     },
-    handleEnter(e) {
-      if (!e.shiftKey) this.askQuestion();
+    handleKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        this.askQuestion();
+      }
     },
     formatTimestamp(timestamp) {
       return new Date(timestamp).toLocaleTimeString();
@@ -131,89 +146,4 @@ export default {
 };
 </script>
 
-<style scoped>
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 20px;
-  background-color: #f0f0f0;
-}
-.chat-container {
-  max-width: 800px;
-  margin: 0 auto;
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  height: 90vh;
-}
-.chat-history {
-  flex-grow: 1;
-  overflow-y: auto;
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-.message {
-  margin-bottom: 15px;
-  padding: 10px;
-  border-radius: 8px;
-  max-width: 80%;
-}
-.user-message {
-  background-color: #007bff;
-  color: white;
-  margin-left: auto;
-}
-.assistant-message {
-  background-color: #e9ecef;
-  color: black;
-  margin-right: auto;
-}
-.input-area {
-  display: flex;
-  gap: 10px;
-}
-#questionInput {
-  flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  resize: none;
-}
-#askButton {
-  background-color: #4caf50;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-#askButton:hover {
-  background-color: #45a049;
-}
-#askButton:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-.timestamp {
-  font-size: 0.8em;
-  color: #666;
-  margin-top: 5px;
-}
-
-.formatted-response pre {
-  background: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  margin: 0;
-  white-space: pre-wrap;
-  font-family: Consolas, "Courier New", monospace;
-  overflow-x: auto;
-  text-align: left;
-}
-</style>
+<style src="./Chat.css" scoped></style>
